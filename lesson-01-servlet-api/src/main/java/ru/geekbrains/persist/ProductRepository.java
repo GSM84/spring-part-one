@@ -16,6 +16,13 @@ public class ProductRepository {
         return new ArrayList<>(productMap.values());
     }
 
+    public Product getProductById(Long _id){
+        if (productMap.containsKey(_id))
+            return productMap.get(_id);
+        else
+            return null;
+    }
+
     public void save(Product _product){
         if(_product.getId() == null){
             long id = identity.getAndIncrement();
