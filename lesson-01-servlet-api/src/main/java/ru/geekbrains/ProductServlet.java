@@ -2,16 +2,16 @@ package ru.geekbrains;
 
 import ru.geekbrains.persist.Product;
 import ru.geekbrains.persist.ProductRepository;
-
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.List;
 
-@WebServlet(urlPatterns = "/product")
+@WebServlet(urlPatterns = "/product/*")
 public class ProductServlet extends HttpServlet {
 
     private ProductRepository productRepository;
@@ -22,16 +22,47 @@ public class ProductServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        List<Product> products = productRepository.findAll();
+    protected void doGet(HttpServletRequest _req, HttpServletResponse _resp) throws ServletException, IOException {
 
-        resp.getWriter().println("<table>");
-        resp.getWriter().println("<tr><td>Id</td><td>Title</td><td>Price</td></tr>");
+        PrintWriter pw = _resp.getWriter();
+        if (_req.getPathInfo() == null) {
+            List<Product> products = productRepository.findAll();
 
-        for (Product p: products) {
-            resp.getWriter().println("<tr><td>"+ p.getId() +"</td><td>"+ p.getTitel() +"</td><td>"+ p.getPrice() +"</td></tr>");
+            pw.println("<table>");
+            pw.println("<tr><td>Id</td><td>Title</td><td>Price</td></tr>");
+
+            for (Product p : products) {
+                pw.println(String.format("<tr><td>%s</td><td><a href=\"product/%1$s\">%s</a></td><td>%10.2f</td></tr>", p.getId(), p.getTitel(), p.getPrice()));
+            }
+
+            pw.println("</table>");
+
+        } else {
+            String pathInfo =  _req.getPathInfo();
+
+            try{
+                Long id = Long.parseLong(pathInfo.substring(1));
+                Product p = productRepository.getProductById(id);
+
+                if (p != null) {
+                    pw.println(String.format("<div><h3>Product Title - %s</h3><p>Vendor code - %s</p><p>Unit Price - %10.2f</p></div>", p.getTitel(), p.getId(), p.getPrice()));
+                    pw.println("<a href=\"/servlet-app/product\">Back to products list</a>");
+
+                } else {
+                    pw.println("<p>Incorrect reference " + pathInfo + "</p>");
+                    pw.println(formatBackReference(_req));
+
+                }
+
+            } catch (java.lang.NumberFormatException e){
+                pw.println("<p>Incorrect reference " + pathInfo + "</p>");
+                pw.println(formatBackReference(_req));
+            }
+
         }
+    }
 
-        resp.getWriter().println("</table>");
+    private String formatBackReference(HttpServletRequest _request){
+        return String.format("<a href=\"%s%s\">Back to products list</a>", _request.getContextPath(), _request.getServletPath());
     }
 }
