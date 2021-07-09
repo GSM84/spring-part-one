@@ -6,10 +6,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import ru.geekbrains.persist.Product;
 import ru.geekbrains.persist.ProductRepository;
+
+import javax.validation.Valid;
+import java.math.BigDecimal;
+import java.util.List;
 
 @Controller
 @RequestMapping("/product")
@@ -25,10 +30,23 @@ public class ProductController {
     }
 
     @GetMapping
-    public String listPage(Model _model){
-        logger.info("Product list page requested.");
+    public String listPage(@RequestParam(value = "minPrice", required = false)BigDecimal _minPrice
+                         , @RequestParam(value = "maxPrice", required = false)BigDecimal _maxPrice
+                         , Model _model){
+        logger.info(String.format("Product list page requested with minPrice - %s, maxPrice - %s", _minPrice, _maxPrice));
 
-        _model.addAttribute("products", productRepository.findAll());
+        List<Product> resultSet = null;
+        if (_minPrice != null && _maxPrice != null){
+            resultSet = productRepository.findByPriceBetween(_minPrice, _maxPrice);
+        } else if (_minPrice != null){
+            resultSet = productRepository.findByPriceGreater(_minPrice);
+        } else if (_maxPrice != null) {
+            resultSet = productRepository.findByPriceLess(_maxPrice);
+        } else {
+            resultSet = productRepository.findAll();
+        }
+
+        _model.addAttribute("products", resultSet);
         return "products";
     }
 
@@ -41,37 +59,35 @@ public class ProductController {
     }
 
     @PostMapping
-    public String update(Product _product){
+    public String update(@Valid Product _product, BindingResult result){
         logger.info(String.format("Update product id-%s, title - %s, price - %s", _product.getId(), _product.getTitle(), _product.getPrice()));
 
-        if (_product.getId() == 0) {
-            logger.info(String.format("Product with id %s resolved as new. Going to insert.", _product.getId()));
+        if(result.hasErrors()){
+            logger.info(String.format("Some of parameter values are incorrect id-%s, title - %s, price - %s", _product.getId(), _product.getTitle(), _product.getPrice()));
 
-            productRepository.insert(_product);
-        } else {
-            logger.info(String.format("Product with id %s resolved as existing. Going to update fields.", _product.getId()));
-
-            productRepository.update(_product);
+            return "product_form";
         }
+
+        productRepository.save(_product);
 
         return "redirect:/product";
     }
 
     @GetMapping("/{id}")
-    public String editUser(@PathVariable("id") long _id, Model _model){
+    public String editProduct(@PathVariable("id") Long _id, Model _model){
         logger.info(String.format("Edit product request for id - %s", _id));
 
-        _model.addAttribute("product", productRepository.getById(_id)
+        _model.addAttribute("product", productRepository.findById(_id)
                 .orElseThrow(() -> new NotFoundException(String.format("Product with id - %s not exists.", _id))));
         return "product_form";
     }
 
     @GetMapping("/prd")
-    public String productRemove(@RequestParam(name="id") long _id, @RequestParam(name="action") String _action){
+    public String productRemove(@RequestParam(name="id") Long _id, @RequestParam(name="action") String _action){
         logger.info(String.format("Going to %s product with id - %s", _action, _id));
 
         if (_action.equals(Actions.REMOVE.toString())) {
-            productRepository.remove(_id);
+            productRepository.deleteById(_id);
         }
 
         return "redirect:/product";

@@ -36,6 +36,14 @@
     <div class="row py-2">
         <div class="col-12">
             <a class="btn btn-primary" th:href="@{/product/new}">Add Product</a>
+            <td><button type="button" class="btn btn-primary" th:onclick="showHideFilter('filterForm')">Show/Hide filters</button></td>
+        </div>
+        <div class="col-12">
+            <form style="display:none" id="filterForm" th:action="@{/product?minPrice=${minPrice}&maxPrice=${maxPrice}}" method="get">
+                <input type="text" class="form-control" id="minPrice" th:name="minPrice" th:value="${minPrice}" placeholder="Enter minimum unit price">
+                <input type="text" class="form-control" id="maxPrice" th:name="maxPrice" th:value="${maxPrice}" placeholder="Enter maximum unit price">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
         </div>
 
         <div class="col-12">
@@ -55,10 +63,7 @@
                     <td th:text="${product.price}">price</td>
                     <td>
                         <a class="btn btn-success" th:href="@{/product/{id}(id=${product.id})}"><i class="fas fa-edit"></i></a>
-                        <!--<a class="btn btn-danger" th:href="@{/product/{id}-remove(id=${product.id})}"><i class="far fa-trash-alt"></i></a>
-                    -->
                         <a class="btn btn-danger" th:href="@{/product/prd?id={id}&action=remove(id=${product.id})}"><i class="far fa-trash-alt"></i></a>
-
                     </td>
                 </tr>
                 </tbody>
@@ -78,5 +83,7 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
         crossorigin="anonymous"></script>
+
+<script type="text/javascript" th:src="@{/js/actions.js}"></script>
 </body>
 </html>

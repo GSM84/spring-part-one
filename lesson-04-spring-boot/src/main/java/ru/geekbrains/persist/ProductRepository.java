@@ -1,55 +1,19 @@
 package ru.geekbrains.persist;
 
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
-import javax.annotation.PostConstruct;
-import java.util.ArrayList;
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
-@Repository
-public class ProductRepository {
+public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    private final Map<Long, Product> productMap = new ConcurrentHashMap<>();
+    @Query(value = "select * from product where price > ?1", nativeQuery = true)
+    List<Product> findByPriceGreater(BigDecimal _minPrice);
 
-    private final AtomicInteger identity = new AtomicInteger(0);
+    @Query(value = "select * from product where price < ?1", nativeQuery = true)
+    List<Product> findByPriceLess(BigDecimal _maxPrice);
 
-    public List<Product> findAll(){
-        return new ArrayList<>(productMap.values());
-    }
-
-    public Optional<Product> getById(long _id){
-        return Optional.ofNullable(productMap.get(_id));
-    }
-
-    public void insert(Product _product) {
-        long id = identity.incrementAndGet();
-        _product.setId(id);
-        productMap.put(id, _product);
-    }
-
-    public void update(Product _product) {
-        productMap.put(_product.getId(), _product);
-    }
-
-    public void remove(long _id){
-        productMap.remove(_id);
-    }
-
-    @PostConstruct
-    public void init(){
-        long id = identity.incrementAndGet();
-        productMap.put(id, new Product(id, "Pottato", 1.35d));
-        id = identity.incrementAndGet();
-        productMap.put(id, new Product(id, "Cheese", 5.35d));
-        id = identity.incrementAndGet();
-        productMap.put(id, new Product(id, "Chicken", 3.35d));
-        id = identity.incrementAndGet();
-        productMap.put(id, new Product(id, "Bread", 0.35d));
-        id = identity.incrementAndGet();
-        productMap.put(id, new Product(id, "Beer", 2.35d));
-    }
+    @Query(value = "select * from product where price between ?1 and ?2", nativeQuery = true)
+    List<Product> findByPriceBetween(BigDecimal _minPrice, BigDecimal _maxPrice);
 }
