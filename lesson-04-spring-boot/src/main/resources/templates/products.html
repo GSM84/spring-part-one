@@ -39,10 +39,10 @@
             <td><button type="button" class="btn btn-primary" th:onclick="showHideFilter('filterForm')">Show/Hide filters</button></td>
         </div>
         <div class="col-12">
-            <form style="display:none" id="filterForm" th:action="@{/product?minPrice=${minPrice}&maxPrice=${maxPrice}}" method="get">
-                <input type="text" class="form-control" id="minPrice" th:name="minPrice" th:value="${minPrice}" placeholder="Enter minimum unit price">
-                <input type="text" class="form-control" id="maxPrice" th:name="maxPrice" th:value="${maxPrice}" placeholder="Enter maximum unit price">
-                <button type="submit" class="btn btn-primary">Submit</button>
+            <form style="display:none" id="filterForm"  method="get">
+                <input type="number" class="form-control" id="minPrice" name="minPrice" th:value="${param.minPrice}" placeholder="Enter minimum unit price">
+                <input type="number" class="form-control" id="maxPrice" name="maxPrice" th:value="${param.maxPrice}" placeholder="Enter maximum unit price">
+                <button type="submit" class="btn btn-primary">Apply Filters</button>
             </form>
         </div>
 
@@ -51,13 +51,33 @@
                 <thead>
                 <tr>
                     <th scope="col">Id</th>
-                    <th scope="col">Product title</th>
-                    <th scope="col">Price</th>
+                    <th scope="col">Product title
+                        <a th:href="@{/product(pageNum=${products.getPageable().getPageNumber() + 1}
+                                             , pageSize=${products.size}
+                                             , minPrice=${param.minPrice}
+                                             , maxPrice=${param.maxPrice}
+                                             , sortType=${sortType}
+                                             , sortField='title'
+                                       )
+                                     }" >
+                            <i id="sortTitle" class="fa fa-sort-down"></i></a>
+                    </th>
+                    <th scope="col">Price
+                        <a th:href="@{/product(pageNum=${products.getPageable().getPageNumber() + 1}
+                                             , pageSize=${products.size}
+                                             , minPrice=${param.minPrice}
+                                             , maxPrice=${param.maxPrice}
+                                             , sortType=${sortType}
+                                             , sortField='price'
+                                       )
+                                     }" >
+                        <i id="sortPrice" class="fa fa-sort-down"></i></a>
+                    </th>
                     <th scope="col">Actions</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="product : ${products}">
+                <tr th:if="${products.hasContent()}" th:each="product : ${products.content}">
                     <td scope="row" th:text="${product.id}">1</td>
                     <td th:text="${product.title}">N/A</td>
                     <td th:text="${product.price}">price</td>
@@ -66,9 +86,51 @@
                         <a class="btn btn-danger" th:href="@{/product/prd?id={id}&action=remove(id=${product.id})}"><i class="far fa-trash-alt"></i></a>
                     </td>
                 </tr>
+
+                <tr th:unless="${products.hasContent()}" align="center"><td colspan="4">No Data Found</td></tr>
                 </tbody>
             </table>
         </div>
+        <div class="col-12">
+            <nav aria-label="...">
+                <ul class="pagination">
+                    <li th:classappend="${!products.hasPrevious()} ? 'disabled'" class="page-item" id="prev">
+                        <a class="page-link " th:href="@{/product(pageNum=${products.previousOrFirstPageable().getPageNumber() + 1}
+                                             , pageSize=${products.size}
+                                             , minPrice=${param.minPrice}
+                                             , maxPrice=${param.maxPrice}
+                                             , sortType=${param.sortType}
+                                             , sortField=${param.sortField})
+                                     }" tabindex="-1">Previous</a>
+                    </li>
+
+                    <li th:each="num : ${#numbers.sequence(1, products.totalPages)}"
+                        th:classappend="${num == products.number + 1} ? 'active'"
+                        class="page-item">
+                        <a class="page-link"
+                           th:text="${num}"
+                           th:href="@{/product(pageNum=${num}
+                                             , pageSize=${products.size}
+                                             , minPrice=${param.minPrice}
+                                             , maxPrice=${param.maxPrice}
+                                             , sortType=${param.sortType}
+                                             , sortField=${param.sortField})
+                                     }">1</a>
+                    </li>
+
+                    <li th:classappend="${!products.hasNext()} ? 'disabled'" class="page-item" id="next">
+                        <a class="page-link" th:href="@{/product(pageNum=${products.nextOrLastPageable().getPageNumber() + 1}
+                                             , pageSize=${products.size}
+                                             , minPrice=${param.minPrice}
+                                             , maxPrice=${param.maxPrice}
+                                             , sortType=${param.sortType}
+                                             , sortField=${param.sortField})
+                                     }">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
     </div>
 </div>
 

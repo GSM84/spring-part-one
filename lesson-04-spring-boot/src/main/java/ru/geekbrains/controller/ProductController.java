@@ -3,6 +3,9 @@ package ru.geekbrains.controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,10 +14,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import ru.geekbrains.persist.Product;
 import ru.geekbrains.persist.ProductRepository;
+import ru.geekbrains.persist.ProductSpecification;
 
 import javax.validation.Valid;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/product")
@@ -30,23 +36,39 @@ public class ProductController {
     }
 
     @GetMapping
-    public String listPage(@RequestParam(value = "minPrice", required = false)BigDecimal _minPrice
-                         , @RequestParam(value = "maxPrice", required = false)BigDecimal _maxPrice
+    public String listPage(@RequestParam(value = "minPrice")Optional<BigDecimal> _minPrice
+                         , @RequestParam(value = "maxPrice")Optional<BigDecimal> _maxPrice
+                         , @RequestParam("pageNum") Optional<Integer> _pageNum
+                         , @RequestParam("pageSize") Optional<Integer> _pageSize
+                         , @RequestParam("sortType") Optional<String> _sortType
+                         , @RequestParam("sortField") Optional<String> _sortField
                          , Model _model){
-        logger.info(String.format("Product list page requested with minPrice - %s, maxPrice - %s", _minPrice, _maxPrice));
+        logger.info(String.format("Product list page requested with minPrice - %s, maxPrice - %s, sort type %s", _minPrice, _maxPrice, _sortType.isPresent()?_sortType.get():_sortType));
 
-        List<Product> resultSet = null;
-        if (_minPrice != null && _maxPrice != null){
-            resultSet = productRepository.findByPriceBetween(_minPrice, _maxPrice);
-        } else if (_minPrice != null){
-            resultSet = productRepository.findByPriceGreater(_minPrice);
-        } else if (_maxPrice != null) {
-            resultSet = productRepository.findByPriceLess(_maxPrice);
+        Specification<Product> spec = Specification.where(null);
+
+        if(_minPrice.isPresent()){
+            spec = spec.and(ProductSpecification.minPrice(_minPrice.get()));
+        }
+        if(_maxPrice.isPresent()){
+            spec = spec.and(ProductSpecification.maxPrice(_maxPrice.get()));
+        }
+        if(_sortType.isPresent() && !_sortType.get().isBlank() && _sortField.isPresent() && !_sortField.get().isBlank()) {
+            _model.addAttribute("sortType", _sortType.get().equals("asc") ? "desc" : "asc");
+
+            _model.addAttribute("products",
+                    productRepository.findAll(spec, PageRequest.of(
+                            _pageNum.orElse(1) - 1
+                            , _pageSize.orElse(7)
+                            , Sort.by(Sort.Direction.fromString(_sortType.get()), _sortField.get()))));
         } else {
-            resultSet = productRepository.findAll();
+            _model.addAttribute("sortType", "asc");
+            _model.addAttribute("products",
+                    productRepository.findAll(spec, PageRequest.of(
+                            _pageNum.orElse(1) - 1
+                            , _pageSize.orElse(7))));
         }
 
-        _model.addAttribute("products", resultSet);
         return "products";
     }
 
