@@ -1,0 +1,24 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+
+        <li th:fragment="pageNavigation(id, title, classCondition, reference)" th:classappend="${classCondition} ? 'disabled'" class="page-item" id="${id}">
+            <a class="page-link" th:href="@{/product(pageNum=${reference}
+                                             , pageSize=${products.size}
+                                             , minPrice=${param.minPrice}
+                                             , maxPrice=${param.maxPrice}
+                                             , sortType=${param.sortType}
+                                             , sortField=${param.sortField})
+                                     }">[[${title}]]</a>
+        </li>
+
+        <a th:fragment="navigationLink()" class="page-link"
+           th:text="${num}"
+           th:href="@{/product(pageNum=${num}
+                                             , pageSize=${products.size}
+                                             , minPrice=${param.minPrice}
+                                             , maxPrice=${param.maxPrice}
+                                             , sortType=${param.sortType}
+                                             , sortField=${param.sortField})
+                                     }">1</a>
+
+</html>

@@ -15,6 +15,7 @@ import org.springframework.web.servlet.ModelAndView;
 import ru.geekbrains.persist.Product;
 import ru.geekbrains.persist.ProductRepository;
 import ru.geekbrains.persist.ProductSpecification;
+import ru.geekbrains.service.ProductService;
 
 import javax.validation.Valid;
 import java.math.BigDecimal;
@@ -28,46 +29,28 @@ public class ProductController {
 
     private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
 
-    private final ProductRepository productRepository;
+    private final ProductService productService;
 
     @Autowired
-    public ProductController(ProductRepository _productRepository) {
-        this.productRepository = _productRepository;
+    public ProductController(ProductService _prodcutService) {
+        this.productService = _prodcutService;
     }
 
     @GetMapping
-    public String listPage(@RequestParam(value = "minPrice")Optional<BigDecimal> _minPrice
-                         , @RequestParam(value = "maxPrice")Optional<BigDecimal> _maxPrice
-                         , @RequestParam("pageNum") Optional<Integer> _pageNum
-                         , @RequestParam("pageSize") Optional<Integer> _pageSize
-                         , @RequestParam("sortType") Optional<String> _sortType
-                         , @RequestParam("sortField") Optional<String> _sortField
+    public String listPage(ProductListParams _paramsDTO
                          , Model _model){
-        logger.info(String.format("Product list page requested with minPrice - %s, maxPrice - %s, sort type %s", _minPrice, _maxPrice, _sortType.isPresent()?_sortType.get():_sortType));
+        logger.info(String.format("Product list page requested with minPrice - %s, maxPrice - %s, sort type %s"
+                , _paramsDTO.getMinPrice(), _paramsDTO.getMaxPrice(), _paramsDTO.getSortType()));
 
-        Specification<Product> spec = Specification.where(null);
 
-        if(_minPrice.isPresent()){
-            spec = spec.and(ProductSpecification.minPrice(_minPrice.get()));
-        }
-        if(_maxPrice.isPresent()){
-            spec = spec.and(ProductSpecification.maxPrice(_maxPrice.get()));
-        }
-        if(_sortType.isPresent() && !_sortType.get().isBlank() && _sortField.isPresent() && !_sortField.get().isBlank()) {
-            _model.addAttribute("sortType", _sortType.get().equals("asc") ? "desc" : "asc");
-
-            _model.addAttribute("products",
-                    productRepository.findAll(spec, PageRequest.of(
-                            _pageNum.orElse(1) - 1
-                            , _pageSize.orElse(7)
-                            , Sort.by(Sort.Direction.fromString(_sortType.get()), _sortField.get()))));
+        if(_paramsDTO.getSortType() != null && !_paramsDTO.getSortType().isBlank()
+                && _paramsDTO.getSortField() != null && !_paramsDTO.getSortField().isBlank()) {
+            _model.addAttribute("sortType", _paramsDTO.getSortType().equals("asc") ? "desc" : "asc");
         } else {
             _model.addAttribute("sortType", "asc");
-            _model.addAttribute("products",
-                    productRepository.findAll(spec, PageRequest.of(
-                            _pageNum.orElse(1) - 1
-                            , _pageSize.orElse(7))));
         }
+
+        _model.addAttribute("products", productService.findWithFilter(_paramsDTO));
 
         return "products";
     }
@@ -90,7 +73,7 @@ public class ProductController {
             return "product_form";
         }
 
-        productRepository.save(_product);
+        productService.save(_product);
 
         return "redirect:/product";
     }
@@ -99,7 +82,7 @@ public class ProductController {
     public String editProduct(@PathVariable("id") Long _id, Model _model){
         logger.info(String.format("Edit product request for id - %s", _id));
 
-        _model.addAttribute("product", productRepository.findById(_id)
+        _model.addAttribute("product", productService.findById(_id)
                 .orElseThrow(() -> new NotFoundException(String.format("Product with id - %s not exists.", _id))));
         return "product_form";
     }
@@ -109,7 +92,7 @@ public class ProductController {
         logger.info(String.format("Going to %s product with id - %s", _action, _id));
 
         if (_action.equals(Actions.REMOVE.toString())) {
-            productRepository.deleteById(_id);
+            productService.deleteById(_id);
         }
 
         return "redirect:/product";
