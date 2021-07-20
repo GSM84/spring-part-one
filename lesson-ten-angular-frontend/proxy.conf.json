@@ -2,6 +2,7 @@
   "/api/*": {
     "target": "http://localhost:8080/spring-mvc-app",
     "secure": false,
-    "loglevel": "debug"
+    "loglevel": "debug",
+    "changeOrigin": true
   }
 }

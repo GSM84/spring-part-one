@@ -37,14 +37,23 @@ export class ProductFormComponent implements OnInit {
 
   public save(){
     this.productService.save(this.product)
-      .subscribe((data: Product) => {
-        console.log("process response");
-        this.isError = false;
-        this.router.navigateByUrl("/product");
-      }, (err) => {
-        this.isError = false;
-        console.log(err);
-      })
+      .subscribe(
+        data => {
+          this.isError = false;
+          console.log('AllthePost' + JSON.stringify(data));
+          this.router.navigateByUrl("/product");},
+        err => {
+          this.isError = true;
+          console.log("error occurred" + err);
+        }
+      //   (data: Product) => {
+      //   console.log("process response");
+      //   this.isError = false;
+      //   this.router.navigateByUrl("/product");
+      // }, (err) => {
+      //   this.isError = false;
+      //   console.log(err);
+      )
   }
     /*this.productService.save(this.product)
       .then(() => {

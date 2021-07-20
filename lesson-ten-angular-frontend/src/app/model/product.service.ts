@@ -47,7 +47,7 @@ export class ProductService {
 
     if (product.id == -1){
       // create new
-      return this.http.post<Product>("/api/v1/product", body, {'headers':headers});
+      return this.http.post<Product>("/api/v1/product", {"title": product.title, "price": product.price}, {'headers':headers});
     } else {
       // update existing
       return this.http.put<Product>("/api/v1/product", body, {'headers':headers});
