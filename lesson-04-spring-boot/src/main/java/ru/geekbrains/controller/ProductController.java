@@ -36,7 +36,7 @@ public class ProductController {
         this.productService = _prodcutService;
     }
 
-    @GetMapping
+    @GetMapping()
     public String listPage(ProductListParams _paramsDTO
                          , Model _model){
         logger.info(String.format("Product list page requested with minPrice - %s, maxPrice - %s, sort type %s"
