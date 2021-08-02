@@ -12,14 +12,14 @@ public class User {
     private Long id;
 
     @Column(nullable = false)
-    @NotBlank
+
     private String name;
 
     @Column(nullable = false)
     private Integer age;
 
     @Column(nullable = false)
-    @NotBlank
+
     private String password;
 
     public User() {
