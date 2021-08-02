@@ -1,6 +1,7 @@
 package ru.geekbrains.persist;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 
 @Entity
 @Table(name="user")
@@ -11,16 +12,15 @@ public class User {
     private Long id;
 
     @Column(nullable = false)
+    @NotBlank
     private String name;
 
     @Column(nullable = false)
     private Integer age;
 
     @Column(nullable = false)
+    @NotBlank
     private String password;
-
-    @Transient
-    private String repeatPassword;
 
     public User() {
     }
@@ -64,11 +64,4 @@ public class User {
         this.password = password;
     }
 
-    public String getRepeatPassword() {
-        return repeatPassword;
-    }
-
-    public void setRepeatPassword(String repeatPassword) {
-        this.repeatPassword = repeatPassword;
-    }
 }

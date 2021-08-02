@@ -41,7 +41,7 @@ public class UserController {
     public String newUserForm(Model model) {
         logger.info("New user page requested");
 
-        model.addAttribute("user", new User());
+        model.addAttribute("user", new UserDto());
         return "user_form";
     }
 
@@ -64,6 +64,10 @@ public class UserController {
 
         if (!user.getPassword().equals(user.getRepeatPassword())) {
             result.rejectValue("repeatPassword", "", "Repeated password doesn't match with password or empty.");
+
+            return "user_form";
+        } else if (user.getPassword().isBlank() || user.getPassword().isEmpty()) {
+            result.rejectValue("password", "", "Password can't be empty.");
 
             return "user_form";
         }

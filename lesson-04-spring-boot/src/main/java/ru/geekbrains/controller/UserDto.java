@@ -1,19 +1,20 @@
 package ru.geekbrains.controller;
 
-import javax.validation.constraints.NotBlank;
-
 public class UserDto {
     private Long id;
 
-    @NotBlank
+
     private String name;
 
     private Integer age;
 
-    @NotBlank
+
     private String password;
 
     private String repeatPassword;
+
+    public UserDto() {
+    }
 
     public UserDto(Long id, String name, Integer age) {
         this.id = id;
