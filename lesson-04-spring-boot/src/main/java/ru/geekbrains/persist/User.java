@@ -1,10 +1,10 @@
 package ru.geekbrains.persist;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
+import java.util.Set;
 
 @Entity
-@Table(name="user")
+@Table(name = "user")
 public class User {
 
     @Id
@@ -12,24 +12,29 @@ public class User {
     private Long id;
 
     @Column(nullable = false)
-
     private String name;
 
     @Column(nullable = false)
     private Integer age;
 
-    @Column(nullable = false)
-
+    @Column
     private String password;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "user_role",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> role;
 
     public User() {
     }
 
-    public User(Long id, String name, Integer age, String password) {
+    public User(Long id, String name, Integer age, String password, Set<Role> roles) {
         this.id = id;
         this.name = name;
         this.age = age;
         this.password = password;
+        this.role = roles;
     }
 
     public Long getId() {
@@ -64,4 +69,11 @@ public class User {
         this.password = password;
     }
 
+    public Set<Role> getRoles() {
+        return role;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.role = roles;
+    }
 }

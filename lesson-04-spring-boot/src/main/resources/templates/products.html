@@ -12,7 +12,7 @@
 <div class="container">
     <div class="row py-2">
         <div class="col-12">
-            <a class="btn btn-primary" th:href="@{/product/new}">Add Product</a>
+            <a sec:authorize="hasRole('SUPER_ADMIN')" class="btn btn-primary" th:href="@{/product/new}">Add Product</a>
             <td><button type="button" class="btn btn-primary" th:onclick="showHideFilter('filterForm')">Show/Hide filters</button></td>
         </div>
         <div class="col-12">
@@ -39,8 +39,8 @@
                     <td th:text="${product.title}">N/A</td>
                     <td th:text="${product.price}">price</td>
                     <td>
-                        <a class="btn btn-success" th:href="@{/product/{id}(id=${product.id})}"><i class="fas fa-edit"></i></a>
-                        <a class="btn btn-danger" th:href="@{/product/prd?id={id}&action=remove(id=${product.id})}"><i class="far fa-trash-alt"></i></a>
+                        <a sec:authorize="hasRole('SUPER_ADMIN')" class="btn btn-success" th:href="@{/product/{id}(id=${product.id})}"><i class="fas fa-edit"></i></a>
+                        <a sec:authorize="hasRole('SUPER_ADMIN')" class="btn btn-danger" th:href="@{/product/prd?id={id}&action=remove(id=${product.id})}"><i class="far fa-trash-alt"></i></a>
                     </td>
                 </tr>
 

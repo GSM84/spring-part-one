@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head>
     <!-- Required meta tags -->
@@ -21,7 +21,7 @@
 <div class="container">
     <div class="row py-2">
         <div class="col-12">
-            <a class="btn btn-primary" th:href="@{/user/new}">Add User</a>
+            <a sec:authorize="hasRole('SUPER_ADMIN')" class="btn btn-primary" th:href="@{/user/new}">Add User</a>
         </div>
 
         <div class="col-12 mt-3">
@@ -62,8 +62,8 @@
                     <td th:text="${user.name}">Alex</td>
                     <td th:text="${user.age}">22</td>
                     <td>
-                        <a class="btn btn-success" th:href="@{/user/{id}(id = ${user.id})}"><i class="fas fa-edit"></i></a>
-                        <form class="d-inline" th:method="delete" th:action="@{/user/{id}(id = ${user.id})}">
+                        <a sec:authorize="hasRole('SUPER_ADMIN')" class="btn btn-success" th:href="@{/user/{id}(id = ${user.id})}"><i class="fas fa-edit"></i></a>
+                        <form sec:authorize="hasRole('SUPER_ADMIN')" class="d-inline" th:method="delete" th:action="@{/user/{id}(id = ${user.id})}">
                             <button type="submit" class="btn btn-danger"><i class="far fa-trash-alt"></i></button>
                         </form>
                     </td>
