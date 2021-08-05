@@ -10,10 +10,11 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
-import ru.geekbrains.persist.User;
+import ru.geekbrains.persist.RoleRepository;
 import ru.geekbrains.service.UserService;
 
 import javax.validation.Valid;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/user")
@@ -23,9 +24,12 @@ public class UserController {
 
     private final UserService userService;
 
+    private final RoleRepository roleRepository;
+
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, RoleRepository roleRepository) {
         this.userService = userService;
+        this.roleRepository = roleRepository;
     }
 
     @GetMapping
@@ -41,6 +45,9 @@ public class UserController {
     public String newUserForm(Model model) {
         logger.info("New user page requested");
 
+        model.addAttribute("roles", roleRepository.findAll().stream()
+                .map(role -> new RoleDto(role.getId(), role.getName()))
+                .collect(Collectors.toSet()));
         model.addAttribute("user", new UserDto());
         return "user_form";
     }
@@ -49,26 +56,43 @@ public class UserController {
     public String editUser(@PathVariable("id") Long id, Model model) {
         logger.info("Edit user page requested");
 
+        UserDto user = userService.findById(id).get();
+
+        logger.info("User name "+ user.getName() + " roles count " + user.getRoles().size());
+
+        user.getRoles().stream().forEach(r -> logger.info("Role name is " + r.getName()));
+
         model.addAttribute("user", userService.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found")));
+        model.addAttribute("roles", roleRepository.findAll().stream()
+                .map(role -> new RoleDto(role.getId(), role.getName()))
+                .collect(Collectors.toSet()));
+
         return "user_form";
     }
 
     @PostMapping
-    public String update(@Valid @ModelAttribute("user") UserDto user, BindingResult result) {
+    public String update(@Valid @ModelAttribute("user") UserDto user, BindingResult result, Model model) {
         logger.info("Saving user");
 
         if (result.hasErrors()) {
+            model.addAttribute("roles", roleRepository.findAll().stream()
+                    .map(role -> new RoleDto(role.getId(), role.getName()))
+                    .collect(Collectors.toSet()));
             return "user_form";
         }
 
         if (!user.getPassword().equals(user.getRepeatPassword())) {
             result.rejectValue("repeatPassword", "", "Repeated password doesn't match with password or empty.");
-
+            model.addAttribute("roles", roleRepository.findAll().stream()
+                    .map(role -> new RoleDto(role.getId(), role.getName()))
+                    .collect(Collectors.toSet()));
             return "user_form";
         } else if (user.getPassword().isBlank() || user.getPassword().isEmpty()) {
             result.rejectValue("password", "", "Password can't be empty.");
-
+            model.addAttribute("roles", roleRepository.findAll().stream()
+                    .map(role -> new RoleDto(role.getId(), role.getName()))
+                    .collect(Collectors.toSet()));
             return "user_form";
         }
 
