@@ -1,6 +1,7 @@
 package ru.geekbrains.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import ru.geekbrains.controller.NotFoundException;
 import ru.geekbrains.persist.Product;
@@ -30,6 +31,7 @@ public class ProductResource {
                 .orElseThrow(() -> new NotFoundException(String.format("Product with id - %s not exists.", _id)));
     }
 
+    @Secured("ROLE_ADMIN")
     @PostMapping(produces = "application/json")
     public Product create(@RequestBody Product _product){
         if(_product.getId() != null){
@@ -39,6 +41,7 @@ public class ProductResource {
         return _product;
     }
 
+    @Secured("ROLE_ADMIN")
     @PutMapping(produces = "application/json")
     public void update(@RequestBody Product _product){
         if(_product.getId() == null){
@@ -48,6 +51,7 @@ public class ProductResource {
     }
 
     @DeleteMapping(path = "/{id}", produces = "application/json")
+    @Secured("ROLE_ADMIN")
     public void delete(@PathVariable("id") Long _id){
         if(_id == null){
             throw  new BadRequestException("Product id has to be not null!");

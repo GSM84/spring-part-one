@@ -1,11 +1,15 @@
 GET http://localhost:8080/spring-mvc-app/api/v1/product/all
-
+Authorization: Basic admin 44
 ###
 
 POST http://localhost:8080/spring-mvc-app/api/v1/product
 Content-Type: application/json
+Authorization: Basic admin 44
 
 {
-  "title": "new Entity",
+  "title": "new Entity44",
   "price": 43
 }
+
+###
+GET http://localhost:8080/spring-mvc-app/api/v1/product/1
